@@ -4,5 +4,10 @@
 }
 
 .p-block-result {
-    color : #61dafb;
+    color : darkolivegreen;
+    size: 32px;
+}
+
+.p-block-error {
+    color: red;
 }

@@ -10,7 +10,8 @@ let initialState = {
     ifSended: false,
     ifSuccess: false,
     ifFetching: false,
-    message: ""
+    message: "",
+    errors: []
 };
 
 const calculationReducer = (state = initialState, action) => {
@@ -35,7 +36,8 @@ const calculationReducer = (state = initialState, action) => {
                 ifSuccess: false,
                 ifFetching: false,
                 calcResult: 0,
-                message: action.message
+                message: action.message,
+                errors: action.errors
             }
         }
 
@@ -44,6 +46,8 @@ const calculationReducer = (state = initialState, action) => {
             return {
                 ...state,
                 ifFetching: action.isFetching,
+                errors : !state.ifFetching ?  [] : [...state.errors]
+
             }
         }
 
@@ -74,22 +78,26 @@ export const calcSuccess = (data) => {
 
 
 export const calcErrorValidation = (data) => {
+
     return {
         type: CALCULATE_ERROR,
         ifSended: true,
         ifSuccess: false,
         ifFetching: false,
-        message: `Ошибка валидации: ` + data.errors.defaultMessage
+        message: `Ошибка валидации: `,
+        errors: data.map(err=>{
+            return err.defaultMessage
+        })
     }
 };
 
-export const calcTimeout = (data) => {
+export const calcTimeout = (error) => {
     return {
         type: CALCULATE_TIMEOUT,
         ifSended: true,
         ifSuccess: false,
         ifFetching: false,
-        message: `Ошибка сервера: ` + data.errors.defaultMessage
+        message: `Ошибка сервера: ` + error
     }
 };
 
@@ -108,7 +116,20 @@ export const calculate = (creditSummary, interestRate, creditTerm) => {
             .then(data => {
                 dispatch(fetchCalcData(false));
                 dispatch(calcSuccess(data));
-            });
+            })
+            .catch(error => {
+                debugger
+                dispatch(fetchCalcData(false));
+                if (error.status===500){
+                    dispatch (calcErrorValidation("Поля не заполнены"))
+                }
+                if (error.response.status===404) {
+                    dispatch (calcTimeout("Сервер недоступен"))
+                }
+                if (error.response.status===400){
+                    dispatch(calcErrorValidation(error.response.data.errors))
+                }
+            })
     };
 };
 

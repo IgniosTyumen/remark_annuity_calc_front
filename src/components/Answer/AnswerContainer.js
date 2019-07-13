@@ -22,7 +22,8 @@ let mapStateToProps = (state) => ({
     ifSended: state.calc.ifSended,
     ifSuccess: state.calc.ifSuccess,
     ifFetching: state.calc.ifFetching,
-    message: state.calc.message
+    message: state.calc.message,
+    errors: state.calc.errors
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AnswerContainer)
